@@ -1,0 +1,11 @@
+pyproject.toml
+src/task_cli.egg-info/PKG-INFO
+src/task_cli.egg-info/SOURCES.txt
+src/task_cli.egg-info/dependency_links.txt
+src/task_cli.egg-info/entry_points.txt
+src/task_cli.egg-info/requires.txt
+src/task_cli.egg-info/top_level.txt
+src/tasks/__init__.py
+src/tasks/__main__.py
+src/tasks/cli.py
+src/tasks/task.py

@@ -1,0 +1,10 @@
+[project]
+name = "task-cli"
+version = "1.0.0"
+dependencies = [
+    "typer",
+    "typing_extensions"
+]
+
+[project.scripts]
+task-cli = "tasks.cli:app"
