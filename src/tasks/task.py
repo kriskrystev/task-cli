@@ -1,123 +1,50 @@
 import datetime as dt
 import json
-import os
 import uuid
-from enum import Enum
-from pathlib import Path
 from typing import Dict
 
 import typer
 from typing_extensions import Annotated
 
-# =========================
-# File / environment config
-# =========================
-TASKS_JSON = "tasks.json"
-TASK_CLI_DIR = ".task-cli"
-TASK_CLI = "task-cli"
-LOCALAPPDATA_ENV = "LOCALAPPDATA"
-EMPTY_JSON_LIST = "[]"
-UTF8_ENCODING = "utf-8"
-
-# =========================
-# Task status enum
-# =========================
-class TaskStatus(str, Enum):
-    TODO = "TODO"
-    IN_PROGRESS = "IN_PROGRESS"
-    IN_REVIEW = "IN_REVIEW"
-    DONE = "DONE"
-
-
-DEFAULT_STATUS = TaskStatus.TODO
-
-# =========================
-# Task actions
-# =========================
-ACTION_CREATE = "create"
-ACTION_LIST = "list"
-ACTION_DELETE = "delete"
-ACTION_UPDATE = "update"
-
-# =========================
-# Task field names
-# =========================
-TASK_FIELD_ID = "id"
-TASK_FIELD_NAME = "name"
-TASK_FIELD_DESCRIPTION = "description"
-TASK_FIELD_STATUS = "status"
-TASK_FIELD_CREATED_AT = "created_at"
-TASK_FIELD_UPDATED_AT = "updated_at"
-
-# =========================
-# CLI help text
-# =========================
-HELP_NAME = "Name of the task"
-HELP_DESCRIPTION = "Description of the task"
-HELP_STATUS = "Status of the task"
-HELP_TASK_ID = "ID of the task"
-HELP_UPDATE_NAME = "New name for the task (optional)"
-HELP_UPDATE_DESCRIPTION = "New description for the task (optional)"
-HELP_UPDATE_STATUS = "New status for the task (optional)"
-
-# =========================
-# Log / user-facing messages
-# =========================
-LOG_INITIAL_LOAD = "Initial loading tasks from json file"
-LOG_BUILDING_TASK = "Building the task"
-LOG_APPENDING_TASK = "Appending the task"
-LOG_DUMPING_TO_JSON = "Dumping to json file"
-LOG_TASK_CREATED = "Task created successfully"
-LOG_ATTACHING_CREATED_AT = "Attaching created_at"
-LOG_ATTACHING_UPDATED_AT = "Attaching updated_at"
-LOG_ATTACHING_ID = "Attaching id"
-LOG_LISTING_TASKS = "Listing tasks"
-LOG_TASK_DELETED = "Task deleted successfully"
-LOG_DELETING_TASK = "Deleting task"
-LOG_INVALID_TASK_ID = "Invalid task ID format. Please provide a valid UUID4."
-LOG_TASK_NOT_FOUND_TEMPLATE = "Task with ID {task_id} not found"
-LOG_UPDATING_TASK = "Updating task"
-LOG_TASK_UPDATED = "Task updated successfully"
-LOG_NO_FIELDS_TO_UPDATE = "No fields provided to update"
-LOG_INVALID_STATUS = "Invalid status. Must be one of: TODO, IN_PROGRESS, IN_REVIEW, DONE"
-
-
-def get_data_file_path() -> Path:
-    local_app_data = os.getenv(LOCALAPPDATA_ENV)
-    if local_app_data:
-        data_dir = Path(local_app_data) / TASK_CLI
-    else:
-        data_dir = Path.home() / TASK_CLI_DIR
-
-    data_dir.mkdir(parents=True, exist_ok=True)
-    data_file = data_dir / TASKS_JSON
-
-    if not data_file.exists():
-        data_file.write_text(EMPTY_JSON_LIST, encoding=UTF8_ENCODING)
-
-    return data_file
-
+from .constants import (
+    UTF8_ENCODING,
+    TASK_FIELD_ID,
+    TASK_FIELD_NAME,
+    TASK_FIELD_DESCRIPTION,
+    TASK_FIELD_STATUS,
+    TASK_FIELD_CREATED_AT,
+    TASK_FIELD_UPDATED_AT,
+    HELP_NAME,
+    HELP_DESCRIPTION,
+    HELP_STATUS,
+    HELP_TASK_ID,
+    HELP_UPDATE_NAME,
+    HELP_UPDATE_DESCRIPTION,
+    HELP_UPDATE_STATUS,
+    LOG_INITIAL_LOAD,
+    LOG_BUILDING_TASK,
+    LOG_APPENDING_TASK,
+    LOG_DUMPING_TO_JSON,
+    LOG_TASK_CREATED,
+    LOG_ATTACHING_CREATED_AT,
+    LOG_ATTACHING_UPDATED_AT,
+    LOG_ATTACHING_ID,
+    LOG_LISTING_TASKS,
+    LOG_TASK_DELETED,
+    LOG_DELETING_TASK,
+    LOG_INVALID_TASK_ID,
+    LOG_TASK_NOT_FOUND_TEMPLATE,
+    LOG_UPDATING_TASK,
+    LOG_TASK_UPDATED,
+    LOG_NO_FIELDS_TO_UPDATE,
+)
+from .utils import get_data_file_path, is_valid_uuid4, validate_status
 
 DATA_TASKS_JSON = get_data_file_path()
 
 with DATA_TASKS_JSON.open("r", encoding=UTF8_ENCODING) as json_data:
     print(LOG_INITIAL_LOAD)
     task_collection = json.load(json_data)
-
-
-def is_valid_uuid4(uuid_str: str) -> bool:
-    try:
-        uuid.UUID(uuid_str, version=4)
-        return True
-    except ValueError:
-        return False
-
-
-def validate_status(status_str: str) -> TaskStatus:
-    try:
-        return TaskStatus(status_str)
-    except ValueError:
-        raise ValueError(LOG_INVALID_STATUS)
 
 
 def create_task(
